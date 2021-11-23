@@ -2,6 +2,11 @@ describe Appsignal::EventFormatter::ElasticSearch::SearchFormatter do
   let(:klass)     { Appsignal::EventFormatter::ElasticSearch::SearchFormatter }
   let(:formatter) { klass.new }
 
+  before do
+    Appsignal.config = project_fixture_config("production")
+    Appsignal.config[:filter_query_parameters] = ['*']
+  end
+
   it "should register query.moped" do
     expect(
       Appsignal::EventFormatter.registered?("search.elasticsearch", klass)

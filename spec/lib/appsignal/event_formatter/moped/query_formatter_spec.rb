@@ -2,6 +2,11 @@ describe Appsignal::EventFormatter::Moped::QueryFormatter do
   let(:klass) { Appsignal::EventFormatter::Moped::QueryFormatter }
   let(:formatter) { klass.new }
 
+  before do
+    Appsignal.config = project_fixture_config("production")
+    Appsignal.config[:filter_query_parameters] = ['*']
+  end
+
   it "should register query.moped" do
     expect(Appsignal::EventFormatter.registered?("query.moped", klass)).to be_truthy
   end
@@ -90,7 +95,7 @@ describe Appsignal::EventFormatter::Moped::QueryFormatter do
         )
       end
 
-      it { is_expected.to eq ["Update", '{:database=>"database.collection", :selector=>{"_id"=>"?"}, :update=>{"user.?"=>"?"}, :flags=>[]}'] }
+      it { is_expected.to eq ["Update", '{:database=>"database.collection", :selector=>{"_id"=>"?"}, :update=>{"user.name"=>"?"}, :flags=>[]}'] }
     end
 
     context "Moped::Protocol::KillCursors" do

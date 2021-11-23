@@ -2,6 +2,11 @@ require "appsignal/integrations/mongo_ruby_driver"
 describe Appsignal::Hooks::MongoMonitorSubscriber do
   let(:subscriber) { Appsignal::Hooks::MongoMonitorSubscriber.new }
 
+  before do
+    Appsignal.config = project_fixture_config("production")
+    Appsignal.config[:filter_query_parameters] = ['*']
+  end
+
   context "with transaction" do
     let!(:transaction) do
       Appsignal::Transaction.create("1", "http_request", {}, {})

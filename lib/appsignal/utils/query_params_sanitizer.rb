@@ -7,48 +7,49 @@ module Appsignal
       REPLACEMENT_KEY = "?".freeze
 
       module ClassMethods
-        def sanitize(params, only_top_level = false, key_sanitizer = nil)
+
+        def sanitize(params, filter_keys, only_top_level = false)
           case params
           when Hash
-            sanitize_hash params, only_top_level, key_sanitizer
+            sanitize_hash(params, filter_keys, only_top_level)
           when Array
-            sanitize_array params, only_top_level, key_sanitizer
+            sanitize_array(params, filter_keys, only_top_level)
           else
-            REPLACEMENT_KEY
+            filter_keys.include?('*') ? REPLACEMENT_KEY : params
           end
         end
 
         private
 
-        def sanitize_hash(hash, only_top_level, key_sanitizer)
+        def sanitize_hash(hash, filter_keys, only_top_level)
           {}.tap do |h|
             hash.each do |key, value|
-              h[sanitize_key(key, key_sanitizer)] =
-                if only_top_level
+              h[key] =
+                if only_top_level && should_filter?(key, filter_keys)
                   REPLACEMENT_KEY
                 else
-                  sanitize(value, only_top_level, key_sanitizer)
+                  sanitize(value, filter_keys, only_top_level)
                 end
             end
           end
         end
 
-        def sanitize_array(array, only_top_level, key_sanitizer)
-          if only_top_level
-            sanitize(array[0], only_top_level, key_sanitizer)
+        def sanitize_array(array, filter_keys, only_top_level)
+          if only_top_level && filter_keys.include?('*')
+            sanitize(array[0], filter_keys, only_top_level)
           else
-            array.map do |value|
-              sanitize(value, only_top_level, key_sanitizer)
-            end.uniq
+            output = array[0..9].map do |value|
+              sanitize(value, filter_keys, only_top_level)
+            end
+            output.push('[...]') if array.length > 10
+            output
           end
         end
 
-        def sanitize_key(key, sanitizer)
-          case sanitizer
-          when :mongodb then key.to_s.gsub(/(\..+)/, ".#{REPLACEMENT_KEY}")
-          else key
-          end
+        def should_filter?(key, filter_keys)
+          filter_keys.include?('*') || filter_keys.include?(key)
         end
+
       end
 
       extend ClassMethods

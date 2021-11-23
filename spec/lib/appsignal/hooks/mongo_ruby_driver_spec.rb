@@ -1,6 +1,11 @@
 describe Appsignal::Hooks::MongoRubyDriverHook do
   require "appsignal/integrations/mongo_ruby_driver"
 
+  before do
+    Appsignal.config = project_fixture_config("production")
+    Appsignal.config[:filter_query_parameters] = ['*']
+  end
+
   context "with mongo ruby driver" do
     let(:subscriber) { Appsignal::Hooks::MongoMonitorSubscriber.new }
     before { allow(Appsignal::Hooks::MongoMonitorSubscriber).to receive(:new).and_return(subscriber) }

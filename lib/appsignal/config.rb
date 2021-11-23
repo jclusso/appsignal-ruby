@@ -17,6 +17,7 @@ module Appsignal
       :ignore_errors                  => [],
       :ignore_namespaces              => [],
       :filter_parameters              => [],
+      :filter_query_parameters        => ['*'],
       :filter_session_data            => [],
       :send_environment_metadata      => true,
       :send_params                    => true,
@@ -61,6 +62,7 @@ module Appsignal
       "APPSIGNAL_IGNORE_ERRORS"                  => :ignore_errors,
       "APPSIGNAL_IGNORE_NAMESPACES"              => :ignore_namespaces,
       "APPSIGNAL_FILTER_PARAMETERS"              => :filter_parameters,
+      "APPSIGNAL_FILTER_QUERY_PARAMETERS"        => :filter_query_parameters,
       "APPSIGNAL_FILTER_SESSION_DATA"            => :filter_session_data,
       "APPSIGNAL_SEND_ENVIRONMENT_METADATA"      => :send_environment_metadata,
       "APPSIGNAL_SEND_PARAMS"                    => :send_params,
@@ -119,6 +121,7 @@ module Appsignal
     ENV_ARRAY_KEYS = %w[
       APPSIGNAL_DNS_SERVERS
       APPSIGNAL_FILTER_PARAMETERS
+      APPSIGNAL_FILTER_QUERY_PARAMETERS
       APPSIGNAL_FILTER_SESSION_DATA
       APPSIGNAL_IGNORE_ACTIONS
       APPSIGNAL_IGNORE_ERRORS
@@ -298,6 +301,7 @@ module Appsignal
       ENV["_APPSIGNAL_SEND_ENVIRONMENT_METADATA"]    = config_hash[:send_environment_metadata].to_s
       ENV["_APPSIGNAL_ENABLE_STATSD"]                = config_hash[:enable_statsd].to_s
       ENV["_APPSIGNAL_FILTER_PARAMETERS"]            = config_hash[:filter_parameters].join(",")
+      ENV["_APPSIGNAL_FILTER_QUERY_PARAMETERS"]      = config_hash[:filter_query_parameters].join(",")
       ENV["_APPSIGNAL_FILTER_SESSION_DATA"]          = config_hash[:filter_session_data].join(",")
       ENV["_APP_REVISION"]                           = config_hash[:revision].to_s
     end

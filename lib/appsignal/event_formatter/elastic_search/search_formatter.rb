@@ -21,7 +21,9 @@ module Appsignal
                 if [:index, :type].include?(key)
                   val
                 else
-                  Appsignal::Utils::QueryParamsSanitizer.sanitize(val)
+                  Appsignal::Utils::QueryParamsSanitizer.sanitize(
+                    val, Appsignal.config[:filter_query_parameters]
+                  )
                 end
             end
           end

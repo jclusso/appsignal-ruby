@@ -56,7 +56,7 @@ describe Appsignal::Hooks::RedisHook do
             end
             around { |example| keep_transactions { example.run } }
 
-            describe 'with filter_redis_arguments enabled' do
+            describe 'with filter_redis_arguments  = true' do
               it "instrument a redis call" do
                 client = Redis::Client.new
                 expect(client.write([:get, "key"])).to eql("stub_write")
@@ -89,7 +89,7 @@ describe Appsignal::Hooks::RedisHook do
               end
             end
 
-            describe 'with filter_redis_arguments disabled' do
+            describe 'with filter_redis_arguments = false' do
               before do
                 Appsignal.config.config_hash[:filter_redis_arguments] = false
               end

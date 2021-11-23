@@ -1,6 +1,11 @@
 describe Appsignal::EventFormatter::MongoRubyDriver::QueryFormatter do
   let(:formatter) { Appsignal::EventFormatter::MongoRubyDriver::QueryFormatter }
 
+  before do
+    Appsignal.config = project_fixture_config("production")
+    Appsignal.config[:filter_query_parameters] = ['*']
+  end
+
   describe ".format" do
     let(:strategy) { :find }
     let(:command) do
@@ -84,19 +89,19 @@ describe Appsignal::EventFormatter::MongoRubyDriver::QueryFormatter do
         ])
       end
 
-      context "when bulk has more than one update" do
+      context "when bulk has more than 10 updates" do
         let(:value) do
           [
-            { "q" => { "_id" => 1 }, "u" => [{ "foo" => "bar" }] },
-            { "q" => { "_id" => 2 }, "u" => [{ "foo" => "baz" }] }
-          ]
+            { "q" => { "_id" => 1 }, "u" => [{ "foo" => "bar_#{rand(100)}" }] }
+          ] * 20
         end
 
-        it "should return only the first value of sanitized bulk documents" do
-          expect(formatter.apply_strategy(strategy, value)).to eql([
-            { "q" => { "_id" => "?" }, "u" => "[?]" },
-            "[...]"
-          ])
+        it "should return only the first 10 values of sanitized bulk documents" do
+          array = [
+            { "q" => { "_id" => "?" }, "u" => "[?]" }
+          ] * 10
+          array.push("[...]")
+          expect(formatter.apply_strategy(strategy, value)).to eql(array)
         end
       end
     end

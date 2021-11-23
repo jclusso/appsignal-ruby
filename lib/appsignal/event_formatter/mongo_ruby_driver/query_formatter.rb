@@ -46,7 +46,8 @@ module Appsignal
             "limit"  => :allow,
             "multi"  => :allow,
             "upsert" => :allow
-          }
+          },
+          "aggregation" => :sanitize_document
         }.freeze
 
         # Format command based on given strategy
@@ -67,21 +68,30 @@ module Appsignal
 
         # Applies strategy on hash values based on keys
         def self.apply_strategy(strategy, val)
+          filter_keys = Appsignal.config[:filter_query_parameters]
+          should_filter = filter_keys.include?('*')
           case strategy
           when :allow      then val
-          when :deny       then "?"
-          when :deny_array then "[?]"
-          when :sanitize_document
-            Appsignal::Utils::QueryParamsSanitizer.sanitize(val, true, :mongodb)
-          when :sanitize_bulk
-            if val.length > 1
-              [
-                format(:bulk, val.first),
-                "[...]"
-              ]
+          when :deny
+            if should_filter
+              '?'
             else
-              val.map { |v| format(:bulk, v) }
+              Appsignal::Utils::QueryParamsSanitizer.sanitize(val, filter_keys)
             end
+          when :deny_array
+            if should_filter
+              "[?]"
+            else
+              Appsignal::Utils::QueryParamsSanitizer.sanitize(val, filter_keys)
+            end
+          when :sanitize_document
+            Appsignal::Utils::QueryParamsSanitizer.sanitize(
+              val, filter_keys, true
+            )
+          when :sanitize_bulk
+            output = val[0..9].map { |v| format(:bulk, v) }
+            output.push("[...]") if val.length > 10
+            output
           else "?"
           end
         end

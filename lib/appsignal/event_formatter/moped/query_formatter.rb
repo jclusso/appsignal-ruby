@@ -15,14 +15,14 @@ module Appsignal
             [
               "Command", {
                 :database => op.full_collection_name,
-                :selector => sanitize(op.selector, true, :mongodb)
+                :selector => sanitize(op.selector, true)
               }.inspect
             ]
           when "Moped::Protocol::Query"
             [
               "Query", {
                 :database => op.full_collection_name,
-                :selector => sanitize(op.selector, false, :mongodb),
+                :selector => sanitize(op.selector, false),
                 :flags    => op.flags,
                 :limit    => op.limit,
                 :skip     => op.skip,
@@ -33,7 +33,7 @@ module Appsignal
             [
               "Delete", {
                 :database => op.full_collection_name,
-                :selector => sanitize(op.selector, false, :mongodb),
+                :selector => sanitize(op.selector, false),
                 :flags    => op.flags
               }.inspect
             ]
@@ -41,7 +41,7 @@ module Appsignal
             [
               "Insert", {
                 :database   => op.full_collection_name,
-                :documents  => sanitize(op.documents, true, :mongodb),
+                :documents  => sanitize(op.documents, true),
                 :count      => op.documents.count,
                 :flags      => op.flags
               }.inspect
@@ -51,8 +51,8 @@ module Appsignal
               "Update",
               {
                 :database => op.full_collection_name,
-                :selector => sanitize(op.selector, false, :mongodb),
-                :update   => sanitize(op.update, true, :mongodb),
+                :selector => sanitize(op.selector, false),
+                :update   => sanitize(op.update, true),
                 :flags    => op.flags
               }.inspect
             ]
@@ -71,9 +71,10 @@ module Appsignal
 
         private
 
-        def sanitize(params, only_top_level, key_sanitizer)
-          Appsignal::Utils::QueryParamsSanitizer.sanitize \
-            params, only_top_level, key_sanitizer
+        def sanitize(params, only_top_level)
+          Appsignal::Utils::QueryParamsSanitizer.sanitize(
+            params, Appsignal.config[:filter_query_parameters], only_top_level
+          )
         end
       end
     end
