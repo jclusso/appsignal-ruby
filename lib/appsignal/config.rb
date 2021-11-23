@@ -30,6 +30,7 @@ module Appsignal
       :endpoint                       => "https://push.appsignal.com",
       :instrument_net_http            => true,
       :instrument_redis               => true,
+      :filter_redis_arguments         => true,
       :instrument_sequel              => true,
       :skip_session_data              => false,
       :enable_allocation_tracking     => true,
@@ -53,6 +54,7 @@ module Appsignal
       "APPSIGNAL_LOG_PATH"                       => :log_path,
       "APPSIGNAL_INSTRUMENT_NET_HTTP"            => :instrument_net_http,
       "APPSIGNAL_INSTRUMENT_REDIS"               => :instrument_redis,
+      "APPSIGNAL_FILTER_REDIS_ARGUMENTS"         => :filter_redis_arguments,
       "APPSIGNAL_INSTRUMENT_SEQUEL"              => :instrument_sequel,
       "APPSIGNAL_SKIP_SESSION_DATA"              => :skip_session_data,
       "APPSIGNAL_IGNORE_ACTIONS"                 => :ignore_actions,
@@ -105,6 +107,7 @@ module Appsignal
       APPSIGNAL_FILES_WORLD_ACCESSIBLE
       APPSIGNAL_INSTRUMENT_NET_HTTP
       APPSIGNAL_INSTRUMENT_REDIS
+      APPSIGNAL_FILTER_REDIS_ARGUMENTS
       APPSIGNAL_INSTRUMENT_SEQUEL
       APPSIGNAL_RUNNING_IN_CONTAINER
       APPSIGNAL_SEND_ENVIRONMENT_METADATA

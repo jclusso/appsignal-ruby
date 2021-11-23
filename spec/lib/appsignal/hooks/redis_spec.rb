@@ -56,35 +56,89 @@ describe Appsignal::Hooks::RedisHook do
             end
             around { |example| keep_transactions { example.run } }
 
-            it "instrument a redis call" do
-              client = Redis::Client.new
-              expect(client.write([:get, "key"])).to eql("stub_write")
+            describe 'with filter_redis_arguments enabled' do
+              it "instrument a redis call" do
+                client = Redis::Client.new
+                expect(client.write([:get, "key"])).to eql("stub_write")
 
-              transaction_hash = transaction.to_h
-              expect(transaction_hash["events"]).to include(
-                hash_including(
-                  "name" => "query.redis",
-                  "body" => "get ?",
-                  "title" => "stub_id"
+                transaction_hash = transaction.to_h
+                expect(transaction_hash["events"]).to include(
+                  hash_including(
+                    "name" => "query.redis",
+                    "body" => "get ?",
+                    "title" => "stub_id"
+                  )
                 )
-              )
+              end
+
+              it "instrument a redis script call" do
+                client = Redis::Client.new
+                script = "return redis.call('set',KEYS[1],ARGV[1])"
+                keys = ["foo"]
+                argv = ["bar"]
+                expect(client.write([:eval, script, keys.size, keys, argv])).to eql("stub_write")
+
+                transaction_hash = transaction.to_h
+                expect(transaction_hash["events"]).to include(
+                  hash_including(
+                    "name" => "query.redis",
+                    "body" => "#{script} ? ?",
+                    "title" => "stub_id"
+                  )
+                )
+              end
             end
 
-            it "instrument a redis script call" do
-              client = Redis::Client.new
-              script = "return redis.call('set',KEYS[1],ARGV[1])"
-              keys = ["foo"]
-              argv = ["bar"]
-              expect(client.write([:eval, script, keys.size, keys, argv])).to eql("stub_write")
+            describe 'with filter_redis_arguments disabled' do
+              before do
+                Appsignal.config.config_hash[:filter_redis_arguments] = false
+              end
 
-              transaction_hash = transaction.to_h
-              expect(transaction_hash["events"]).to include(
-                hash_including(
-                  "name" => "query.redis",
-                  "body" => "#{script} ? ?",
-                  "title" => "stub_id"
+              it "instrument a redis call" do
+                client = Redis::Client.new
+                expect(client.write([:get, "key"])).to eql("stub_write")
+
+                transaction_hash = transaction.to_h
+                expect(transaction_hash["events"]).to include(
+                  hash_including(
+                    "name" => "query.redis",
+                    "body" => "get key",
+                    "title" => "stub_id"
+                  )
                 )
-              )
+              end
+
+              it "instrument a redis script call" do
+                client = Redis::Client.new
+                script = "return redis.call('set',KEYS[1],ARGV[1])"
+                keys = ["foo"]
+                argv = ["bar"]
+                expect(client.write([:eval, script, keys.size, keys, argv])).to eql("stub_write")
+
+                transaction_hash = transaction.to_h
+                expect(transaction_hash["events"]).to include(
+                  hash_including(
+                    "name" => "query.redis",
+                    "body" => "eval #{script} #{keys.size} #{keys.join(' ')} #{argv.join(' ')}",
+                    "title" => "stub_id"
+                  )
+                )
+              end
+
+              it "limit a redis command length to 1,000 characters" do
+                client = Redis::Client.new
+                long_key = "key" * 1_000
+                expect(client.write([:get, long_key])).to eql("stub_write")
+
+                transaction_hash = transaction.to_h
+                expect(transaction_hash["events"]).to include(
+                  hash_including(
+                    "name" => "query.redis",
+                    "body" => "get #{long_key}"[0..999],
+                    "title" => "stub_id"
+                  )
+                )
+              end
             end
           end
         end

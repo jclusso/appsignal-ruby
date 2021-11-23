@@ -160,6 +160,7 @@ describe Appsignal::Config do
         :filter_session_data            => [],
         :instrument_net_http            => true,
         :instrument_redis               => true,
+        :filter_redis_arguments         => true,
         :instrument_sequel              => true,
         :skip_session_data              => false,
         :send_environment_metadata      => true,
@@ -381,6 +382,7 @@ describe Appsignal::Config do
         :ignore_namespaces => %w[admin private_namespace],
         :instrument_net_http => false,
         :instrument_redis => false,
+        :filter_redis_arguments => false,
         :instrument_sequel => false,
         :files_world_accessible => false,
         :request_headers => %w[accept accept-charset],
@@ -401,6 +403,7 @@ describe Appsignal::Config do
       ENV["APPSIGNAL_IGNORE_NAMESPACES"]       = "admin,private_namespace"
       ENV["APPSIGNAL_INSTRUMENT_NET_HTTP"]     = "false"
       ENV["APPSIGNAL_INSTRUMENT_REDIS"]        = "false"
+      ENV["APPSIGNAL_FILTER_REDIS_ARGUMENTS"]  = "false"
       ENV["APPSIGNAL_INSTRUMENT_SEQUEL"]       = "false"
       ENV["APPSIGNAL_FILES_WORLD_ACCESSIBLE"]  = "false"
       ENV["APPSIGNAL_REQUEST_HEADERS"]         = "accept,accept-charset"
